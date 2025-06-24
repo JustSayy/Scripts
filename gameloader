@@ -11,4 +11,4 @@ if not currentSource:find("SECURE_MARKER") then
     error("🔒 test")
 end
 
-loadstring("https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game"))()
