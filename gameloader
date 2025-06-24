@@ -1,1 +1,14 @@
-test
+local realSource = "https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/gameloader"
+local currentSource = game:HttpGet(realSource) 
+
+-- If this fails (offline/copied script)
+if not currentSource then
+    error("🚫 test") 
+end
+
+-- If SECURE_MARKER is missing (script was edited)
+if not currentSource:find("SECURE_MARKER") then
+    error("🔒 test")
+end
+
+loadstring("https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game"))()
