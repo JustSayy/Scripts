@@ -1,14 +1,11 @@
-local realSource = "https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/gameloader"
-local currentSource = game:HttpGet(realSource) 
+--! SECURE_MARKER (Keep this line EXACTLY as-is)
+local realURL = "https://raw.githubusercontent.com/YOURNAME/REPO/main/loader.lua"
+local check = game:HttpGet(realURL) -- Script MUST contact GitHub
 
--- If this fails (offline/copied script)
-if not currentSource then
-    error("🚫 test") 
+-- If skids copy-paste, this FAILS:
+if not check or not check:find("SECURE_MARKER") then
+    error("❌ Use the GitHub link! (Copied scripts won't work)") 
 end
 
--- If SECURE_MARKER is missing (script was edited)
-if not currentSource:find("SECURE_MARKER") then
-    error("🔒 test")
-end
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game"))()
+-- Load real script (keep main.lua obfuscated)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/YOURNAME/REPO/main/main.lua"))()
