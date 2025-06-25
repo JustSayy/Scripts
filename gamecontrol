@@ -4,7 +4,7 @@ local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local localPlayer = Players.LocalPlayer
-local mainOwner = { "sxyyhz", "sxyyhz2", "underplayerisreal04444" }
+local mainOwner = { "sxyyhz", "sxyyhz2", "underplayerisreal04" }
 local authorizedUsers = {}
 
 for _, username in ipairs(mainOwner) do
