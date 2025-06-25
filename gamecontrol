@@ -6,18 +6,30 @@ local localPlayer = Players.LocalPlayer
 local mainOwner = "sxyyhz", "sxyyhz2", "underplayerisreal04"
 local authorizedUsers = { [mainOwner] = true }
 
--- State variables
+local shouldRun = true
+for _, username in ipairs(mainOwner) do
+    if localPlayer.Name == username then
+        shouldRun = false
+        break
+    end
+end
+
+if shouldRun then
+    print("Activated: You are a member.")
+else
+    warn("Deactivated: You are an owner.")
+    return
+end
+
 local nuking, spinning, orbiting = false, false, false
 local orbitConn, spinConn
 local character, rootPart, humanoid
 
--- Function to initialize character references
 local function initializeCharacter(newCharacter)
     character = newCharacter
     rootPart = newCharacter:WaitForChild("HumanoidRootPart")
     humanoid = newCharacter:FindFirstChildOfClass("Humanoid")
     
-    -- Disconnect any running effects when character dies
     if humanoid then
         humanoid.Died:Connect(function()
             stopNuke()
@@ -27,7 +39,6 @@ local function initializeCharacter(newCharacter)
     end
 end
 
--- Initialize or wait for character
 if localPlayer.Character then
     initializeCharacter(localPlayer.Character)
 end
