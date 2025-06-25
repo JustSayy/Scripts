@@ -45,12 +45,18 @@ end
 localPlayer.CharacterAdded:Connect(initializeCharacter)
 
 local function getPlayer(name)
-    name = name:lower()
+    if type(name) ~= "string" then
+        warn("getPlayer: Expected a string, got " .. tostring(name))
+        return nil
+    end
+
+    name = name:lower() -- temporarily
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr.Name:lower() == name then
             return plr
         end
     end
+    return nil
 end
 
 local function chat(msg)
