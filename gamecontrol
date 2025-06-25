@@ -219,7 +219,7 @@ end
 local function kickPlayer(name)
     local target = getPlayer(name)
     if target then
-        target:Kick("Kicked by admin.")
+        target:Kick("You have been kicked lol")
     end
 end
 
