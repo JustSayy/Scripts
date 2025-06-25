@@ -1,25 +1,25 @@
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local localPlayer = Players.LocalPlayer
 local mainOwner = { "sxyyhz", "sxyyhz2", "underplayerisreal04444" }
-local authorizedUsers = { [mainOwner] = true }
+local authorizedUsers = {}
 
-local shouldRun = true
 for _, username in ipairs(mainOwner) do
-    if localPlayer.Name == username then
-        shouldRun = false
-        break
-    end
+    authorizedUsers[username] = true
 end
 
-if shouldRun then
-    print("Activated: You are a member.")
-else
+-- Check if the current player is NOT authorized (shouldRun = true if not an owner)
+local shouldRun = not authorizedUsers[localPlayer.Name]
+
+if not shouldRun then
     warn("Deactivated: You are an owner.")
-    return
+    return -- Stop script if player is in mainOwner
 end
+
+print("Activated: You are a member.")
 
 local nuking, spinning, orbiting = false, false, false
 local orbitConn, spinConn
@@ -27,14 +27,14 @@ local character, rootPart, humanoid
 
 local function initializeCharacter(newCharacter)
     character = newCharacter
-    rootPart = newCharacter:WaitForChild("HumanoidRootPart")
+    rootPart = newCharacter:WaitForChild("HumanoidRootPart", 5) -- 5-second timeout
     humanoid = newCharacter:FindFirstChildOfClass("Humanoid")
     
     if humanoid then
         humanoid.Died:Connect(function()
-            stopNuke()
-            stopOrbit()
-            unspin()
+            if nuking then stopNuke() end
+            if orbiting then stopOrbit() end
+            if spinning then unspin() end
         end)
     end
 end
@@ -46,11 +46,11 @@ localPlayer.CharacterAdded:Connect(initializeCharacter)
 
 local function getPlayer(name)
     if type(name) ~= "string" then
-        warn("getPlayer: Expected a string, got " .. tostring(name))
+        warn("getPlayer: Expected string, got " .. type(name))
         return nil
     end
-
-    name = name:lower() -- temporarily
+    
+    name = name:lower():gsub("%s+", "") -- Trim whitespace
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr.Name:lower() == name then
             return plr
@@ -64,21 +64,17 @@ local function chat(msg)
 end
 
 local function validateCharacter()
-    if not character or not character.Parent or not rootPart or not rootPart.Parent then
-        return false
-    end
-    return true
+    return character and character.Parent and rootPart and rootPart.Parent
 end
 
 local function ensureHumanoid()
     if not humanoid or not humanoid.Parent then
         if character and character.Parent then
-            humanoid = character:FindFirstChildOfClass("Humanoid") or character:WaitForChild("Humanoid")
+            humanoid = character:FindFirstChildOfClass("Humanoid") or character:WaitForChild("Humanoid", 5)
         else
-            -- Wait for new character if current one is invalid
             character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-            rootPart = character:WaitForChild("HumanoidRootPart")
-            humanoid = character:WaitForChild("Humanoid")
+            rootPart = character:WaitForChild("HumanoidRootPart", 5)
+            humanoid = character:WaitForChild("Humanoid", 5)
         end
     end
     return humanoid
@@ -86,7 +82,6 @@ end
 
 local function moveToOffset(target, offset)
     if not validateCharacter() then return end
-    
     local targetHRP = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
     if targetHRP then
         rootPart.CFrame = CFrame.new(targetHRP.Position + offset)
@@ -108,8 +103,8 @@ local function nuke(targetName)
     
     local target = getPlayer(targetName)
     if not target then return end
+    
     nuking = true
-
     task.spawn(function()
         for _ = 1, 30 do
             if not nuking or not validateCharacter() then break end
@@ -132,9 +127,8 @@ local function stopNuke()
 end
 
 local function orbit(target)
-    if orbiting or not validateCharacter() then return end
+    if not validateCharacter() or orbiting then return end
     orbiting = true
-    local angle = 0
     
     if orbitConn then orbitConn:Disconnect() end
     orbitConn = RunService.Heartbeat:Connect(function()
@@ -149,7 +143,7 @@ local function orbit(target)
             return
         end
         
-        angle = angle + 0.05
+        local angle = os.clock() * 2 -- Smooth rotation over time
         local pos = tHRP.Position + Vector3.new(math.cos(angle) * 4, 0, math.sin(angle) * 4)
         rootPart.CFrame = CFrame.new(pos)
     end)
@@ -186,7 +180,7 @@ local function spin()
             unspin()
             return
         end
-        rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(10), 0)
+        rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(20), 0)
     end)
 end
 
@@ -201,34 +195,31 @@ end
 
 local function sit()
     local hum = ensureHumanoid()
-    if hum then
-        hum.Sit = true
-    end
+    if hum then hum.Sit = true end
 end
 
 local function jump()
     local hum = ensureHumanoid()
-    if hum then
-        hum:ChangeState(Enum.HumanoidStateType.Jumping)
-    end
+    if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
 end
 
 local function reset()
     local hum = ensureHumanoid()
-    if hum then
-        hum.Health = 0
-    end
+    if hum then hum.Health = 0 end
 end
 
 local function authorize(name)
-    authorizedUsers[name] = true
-    chat(name .. " has been authorized.")
+    local target = getPlayer(name)
+    if target then
+        authorizedUsers[target.Name] = true
+        chat(target.Name .. " has been authorized.")
+    end
 end
 
 local function kickPlayer(name)
     local target = getPlayer(name)
     if target then
-        target:Kick("You have been kicked lol")
+        target:Kick("Kicked by admin.")
     end
 end
 
@@ -256,27 +247,31 @@ local function onCommand(sender, message)
     if not authorizedUsers[sender.Name] then return end
 
     local msg = message:lower()
+    local args = {}
+    for word in msg:gmatch("%S+") do
+        table.insert(args, word)
+    end
+
     if msg == "/rline" then rightLine(sender)
     elseif msg == "/bline" then backLine(sender)
-    elseif msg:match("^/nuke ") then nuke(message:sub(7))
+    elseif args[1] == "/nuke" and args[2] then nuke(args[2])
     elseif msg == "/stopnuke" then stopNuke()
     elseif msg == "/dance" then dance()
     elseif msg == "/sit" then sit()
     elseif msg == "/jump" then jump()
     elseif msg == "/reset" then reset()
-    elseif msg:match("^/orbit ") then
-        local name = message:sub(8)
-        local target = name == "me" and sender or getPlayer(name)
+    elseif args[1] == "/orbit" and args[2] then
+        local target = (args[2] == "me") and sender or getPlayer(args[2])
         if target then orbit(target) end
     elseif msg == "/unorbit" then stopOrbit()
-    elseif msg:match("^/goto ") then gotoPlayer(message:sub(7))
-    elseif msg:match("^/bring ") then bringPlayer(message:sub(8))
+    elseif args[1] == "/goto" and args[2] then gotoPlayer(args[2])
+    elseif args[1] == "/bring" and args[2] then bringPlayer(args[2])
     elseif msg == "/spin" then spin()
     elseif msg == "/unspin" then unspin()
-    elseif msg:match("^/authorize ") then authorize(message:sub(12))
-    elseif msg:match("^/lag ") then lagPlayer(message:sub(6))
-    elseif msg:match("^/kick ") then kickPlayer(message:sub(7))
-    elseif msg:match("^/crash ") then crashPlayer(message:sub(8))
+    elseif args[1] == "/authorize" and args[2] then authorize(args[2])
+    elseif args[1] == "/lag" and args[2] then lagPlayer(args[2])
+    elseif args[1] == "/kick" and args[2] then kickPlayer(args[2])
+    elseif args[1] == "/crash" and args[2] then crashPlayer(args[2])
     end
 end
 
@@ -286,28 +281,14 @@ local function bindChatCommands(player)
     end)
 end
 
--- Initialize commands for existing authorized players
 for _, player in ipairs(Players:GetPlayers()) do
     if authorizedUsers[player.Name] then
         bindChatCommands(player)
     end
 end
 
--- Bind commands for future authorized players
 Players.PlayerAdded:Connect(function(player)
     if authorizedUsers[player.Name] then
         bindChatCommands(player)
-    end
-end)
-
--- Bind commands for main owner if they join later
-task.spawn(function()
-    while true do
-        local owner = getPlayer(mainOwner)
-        if owner and not authorizedUsers[owner.Name] then
-            authorizedUsers[owner.Name] = true
-            bindChatCommands(owner)
-        end
-        task.wait(5)
     end
 end)
