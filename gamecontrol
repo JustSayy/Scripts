@@ -3,7 +3,7 @@ local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local localPlayer = Players.LocalPlayer
-local mainOwner = "sxyyhz", "sxyyhz2", "underplayerisreal04"
+local mainOwner = "sxyyhz", "sxyyhz2", "underplayerisreal044"
 local authorizedUsers = { [mainOwner] = true }
 
 local shouldRun = true
