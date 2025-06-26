@@ -243,15 +243,17 @@ local function crashPlayer(name)
     end
 end
 
--- 1. /check - Makes all players say "I'm glitchtale's maid >//<"
+-- Services
+local TextChatService = game:GetService("TextChatService")
+local textChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+
+-- 1. /check - Makes all players say the maid phrase
 local function forceAllChat()
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= localPlayer then -- Don't message yourself
-            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
-                "I'm glitchtale's maid >//<", 
-                "All",
-                player
-            )
+        if player ~= localPlayer then
+            coroutine.wrap(function()
+                textChannel:SendAsync("I'm glitchtale's maid >//<")
+            end)()
         end
     end
 end
@@ -260,11 +262,9 @@ end
 local function reportPlayer(targetName)
     local target = getPlayer(targetName)
     if target then
-        ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
-            "fatty", 
-            "All",
-            target
-        )
+        coroutine.wrap(function()
+            textChannel:SendAsync("fatty")
+        end)()
     end
 end
 
@@ -272,11 +272,9 @@ end
 local function forceSay(targetName, text)
     local target = getPlayer(targetName)
     if target then
-        ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
-            text, 
-            "All",
-            target
-        )
+        coroutine.wrap(function()
+            textChannel:SendAsync(text)
+        end)()
     end
 end
 
