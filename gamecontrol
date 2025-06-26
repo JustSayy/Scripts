@@ -243,44 +243,41 @@ local function crashPlayer(name)
     end
 end
 
-local function forceAllPlayersToChat(message)
+-- 1. /check - Makes all players say "I'm glitchtale's maid >//<"
+local function forceAllChat()
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= localPlayer then -- Don't force ourselves to chat
-            coroutine.wrap(function()
-                local success, err = pcall(function()
-                    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message, "All")
-                end)
-                if not success then
-                    warn("Failed to make "..player.Name.." chat: "..tostring(err))
-                end
-            end)()
+        if player ~= localPlayer then -- Don't message yourself
+            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+                "I'm glitchtale's maid >//<", 
+                "All",
+                player
+            )
         end
     end
 end
 
-local function forcePlayerToChat(playerName, message)
-    local target = getPlayer(playerName)
+-- 2. /report [name] - Makes target say "fatty"
+local function reportPlayer(targetName)
+    local target = getPlayer(targetName)
     if target then
-        coroutine.wrap(function()
-            local success, err = pcall(function()
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message, "All")
-            end)
-            if not success then
-                warn("Failed to make "..target.Name.." chat: "..tostring(err))
-            end
-        end)()
+        ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+            "fatty", 
+            "All",
+            target
+        )
     end
 end
 
--- Add these to your onCommand function:
-elseif msg == "/check" then
-    forceAllPlayersToChat("I'm glitchtale's maid >//<")
-elseif args[1] == "/report" and args[2] then
-    forcePlayerToChat(args[2], "fatty")
-elseif args[1] == "/say" and args[2] and args[3] then
-    local targetName = args[2]
-    local text = table.concat(args, " ", 3) -- Combine all arguments after the target name
-    forcePlayerToChat(targetName, text)
+-- 3. /say [name] [text] - Forces target to say custom text
+local function forceSay(targetName, text)
+    local target = getPlayer(targetName)
+    if target then
+        ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+            text, 
+            "All",
+            target
+        )
+    end
 end
 
 local function onCommand(sender, message)
@@ -313,23 +310,11 @@ elseif args[1] == "/lag" and args[2] then lagPlayer(args[2])
 elseif args[1] == "/kick" and args[2] then kickPlayer(args[2])
 elseif args[1] == "/crash" and args[2] then crashPlayer(args[2])
 elseif msg == "/check" then
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= localPlayer then
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("I'm glitchtale's maid >//<", "All")
-            end
-        end
-    elseif args[1] == "/report" and args[2] then
-        local target = getPlayer(args[2])
-        if target then
-            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("fatty", "All")
-        end
-    elseif args[1] == "/say" and #args >= 3 then
-        local target = getPlayer(args[2])
-        if target then
-            local text = table.concat(args, " ", 3)
-            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(text, "All")
-        end
-    end
+    forceAllChat()
+elseif args[1] == "/report" and args[2] then
+    reportPlayer(args[2])
+elseif args[1] == "/say" and args[2] and args[3] then
+    forceSay(args[2], table.concat(args, " ", 3))
 end
 
 local function bindChatCommands(player)
