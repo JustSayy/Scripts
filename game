@@ -8,22 +8,43 @@
 ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░        
  ░▒▓██████▓▒░░▒▓████████▓▒░▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓████████▓▒░                                                        
 ]]
-print("Raw source info:", debug.getinfo(1, "S").source)
+local REQUIRED_URL = "https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game"
 
-local REQUIRED_URL = "https://raw.githubusercontent.com/JustSayy/Test/main/game"
-
-local function normalize(url)
-    return url:gsub("^@", ""):gsub("\\", "/"):gsub("refs/heads/", ""):lower()
+-- Method 1: Checksum Verification
+local function verifyChecksum()
+    -- Get the official script content
+    local officialContent = game:HttpGet(REQUIRED_URL)
+    
+    -- Get the current script content by reading itself
+    local currentContent = ""
+    for i = 1, 100 do  -- Check first 100 lines to avoid infinite loop
+        local line = debug.getinfo(i, "S")
+        if not line then break end
+        if line.source and line.source ~= "=[C]" then
+            currentContent = currentContent .. line.source .. "\n"
+        end
+    end
+    
+    -- Simple content matching (first 100 characters)
+    return officialContent:sub(1, 100) == currentContent:sub(1, 100)
 end
 
-local source = normalize(debug.getinfo(1, "S").source or "")
-local required = normalize(REQUIRED_URL)
+-- Method 2: Remote Attestation
+local function remoteAttestation()
+    local success, response = pcall(function()
+        return game:HttpGet("https://your-verification-server.com/validate")
+    end)
+    return success and response == "VALID"
+end
 
-if not source:find(required, 1, true) then
-    warn("SOURCE VERIFICATION FAILED!")
-    warn("Current:", source)
-    warn("Required:", required)
+-- Main verification
+if not verifyChecksum() then
+    warn("\n==============================================")
+    warn("This script must be executed directly from:")
+    warn(REQUIRED_URL)
+    warn("==============================================\n")
     return
 end
 
-print("Verification passed!")
+-- Your script content here
+print("Source verification passed! Script loading...")
