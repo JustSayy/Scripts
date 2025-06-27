@@ -9,30 +9,35 @@
  ░▒▓██████▓▒░░▒▓████████▓▒░▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓████████▓▒░                                                        
 ]]
 local function verifySource()
-    -- Get the current script's source
-    local scriptSource = script and script:GetFullName() or ""
+    -- Try to fetch the script from GitHub and check headers
+    local success, response = pcall(function()
+        return game:HttpGet("https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game", true)
+    end)
     
-    -- Check if running from GitHub raw URL
-    if scriptSource:find("https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game") then
+    -- If successful and contains GitHub headers, allow execution
+    if success and response and type(response) == "table" then
+        -- Check for GitHub's headers (raw.githubusercontent sends specific headers)
+        if response.headers and response.headers["x-github-request-id"] then
+            return true
+        end
+    end
+    
+    -- If running in a Roblox LocalScript, check for GitHub URL
+    if script and script:GetFullName():find("https://raw.githubusercontent.com/JustSayy/Test/") then
         return true
     end
     
-    -- Additional checks can be added here
     return false
 end
 
 if not verifySource() then
-    warn("Unauthorized execution attempt detected!")
-    return -- Stop execution if not from approved source
+    warn("❗ Script must be loaded from: https://raw.githubusercontent.com/JustSayy/Test/main/game")
+    warn("❗ Direct copying or executing from other sources is blocked.")
+    return
 end
 
--- Your actual script content starts here
-print("Script successfully loaded from authorized source!")
+-- ✅ Authorized execution (from GitHub)
+print("✅ Verified source! Running script...")
 
--- Example script content
-local function main()
-    -- Your exploit functionality goes here
-    print("Exploit features are now active!")
-end
-
-main()
+-- Your exploit script goes below this line
+loadstring(game:HttpGet("https://raw.githubusercontent.com/JustSayy/Test/main/game"))()
