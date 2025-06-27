@@ -8,33 +8,42 @@
 ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░        
  ░▒▓██████▓▒░░▒▓████████▓▒░▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓████████▓▒░                                                        
 ]]
+
 local REQUIRED_URL = "https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game"
 
 local function verifySource()
-    -- Try to get source information
-    local success, current_source = pcall(function()
-        return debug.getinfo(1, "S").source or ""
-    end)
+    -- Get the current script source
+    local sourceInfo = debug.getinfo(1, "S")
+    if not sourceInfo or not sourceInfo.source then
+        warn("Debug info not available in this executor")
+        return false
+    end
     
-    -- If we couldn't get source info or it doesn't match
-    if not success or not current_source:find(REQUIRED_URL, 1, true) then
-        -- Try to make it obvious the script won't work
-        warn("==============================================")
-        warn("This script must be executed directly from:")
-        warn(REQUIRED_URL)
-        warn("==============================================")
-        
-        -- Try different methods to stop execution
-        if getgenv then getgenv().STOP_SCRIPT = true end
-        if error then error("Invalid execution source", 0) end
+    -- Normalize the URLs for comparison
+    local current_source = sourceInfo.source
+    local normalized_current = current_source:gsub("^@", ""):gsub("\\", "/")
+    local normalized_required = REQUIRED_URL:gsub("refs/heads/", ""):gsub("\\", "/")
+    
+    -- Debug output to help diagnose
+    warn("Current source:", current_source)
+    warn("Normalized current:", normalized_current)
+    warn("Required source:", normalized_required)
+    
+    -- Check if the normalized URL matches
+    if not normalized_current:find(normalized_required, 1, true) then
+        warn("Source verification failed")
         return false
     end
     return true
 end
 
 if not verifySource() then
-    -- Add additional blocking mechanisms
-    warn("error") -- Infinite loop to block execution
+    warn("==============================================")
+    warn("This script must be executed directly from:")
+    warn(REQUIRED_URL)
+    warn("==============================================")
+    return
 end
 
-print("hi")
+-- Your script continues here
+print("Source verification successful! Loading script...")
