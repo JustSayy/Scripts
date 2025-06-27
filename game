@@ -29,14 +29,6 @@ local function verifyChecksum()
     return officialContent:sub(1, 100) == currentContent:sub(1, 100)
 end
 
--- Method 2: Remote Attestation
-local function remoteAttestation()
-    local success, response = pcall(function()
-        return game:HttpGet("https://your-verification-server.com/validate")
-    end)
-    return success and response == "VALID"
-end
-
 -- Main verification
 if not verifyChecksum() then
     warn("\n==============================================")
