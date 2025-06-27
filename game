@@ -8,48 +8,23 @@
 ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░        
  ░▒▓██████▓▒░░▒▓████████▓▒░▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓████████▓▒░                                                        
 ]]
-local REQUIRED_URL = "https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game"
+where do I put the 
+print("Raw source info:", debug.getinfo(1, "S").source)
 
--- Function to normalize URLs for comparison
+local REQUIRED_URL = "https://raw.githubusercontent.com/JustSayy/Test/main/game"
+
 local function normalize(url)
-    return url:gsub("^@", ""):gsub("\\", "/"):lower()
+    return url:gsub("^@", ""):gsub("\\", "/"):gsub("refs/heads/", ""):lower()
 end
 
--- Verify the script source
-local function verifySource()
-    -- Get current script source
-    local source_info = debug.getinfo(1, "S")
-    if not source_info or not source_info.source then return false end
-    
-    local current_source = normalize(source_info.source)
-    local required_source = normalize(REQUIRED_URL)
-    
-    -- Check for direct match or loadstring match
-    if current_source:find(required_source, 1, true) then
-        return true
-    end
-    
-    -- Additional check for loadstring execution
-    if current_source:find("loadstring", 1, true) then
-        -- Try to get the calling script's source
-        local caller_info = debug.getinfo(2, "S")
-        if caller_info and caller_info.source then
-            return normalize(caller_info.source):find(required_source, 1, true)
-        end
-    end
-    
-    return false
-end
+local source = normalize(debug.getinfo(1, "S").source or "")
+local required = normalize(REQUIRED_URL)
 
--- Main verification check
-if not verifySource() then
-    warn("\n==============================================")
-    warn("This script must be executed directly from:")
-    warn(REQUIRED_URL)
-    warn("or loaded via loadstring from that URL")
-    warn("==============================================\n")
+if not source:find(required, 1, true) then
+    warn("SOURCE VERIFICATION FAILED!")
+    warn("Current:", source)
+    warn("Required:", required)
     return
 end
 
--- Your script content here
-print("Source verification passed! Script loading...")
+print("Verification passed!")
