@@ -1,0 +1,9 @@
+local required_source = "https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game"
+local current_source = debug.getinfo(1, "S").source
+
+if not current_source:find(required_source, 1, true) then
+    warn("This script can only be executed directly from:\n"..required_source)
+    return
+end
+
+print("loaded")
