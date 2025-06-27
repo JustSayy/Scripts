@@ -8,42 +8,48 @@
 ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░        
  ░▒▓██████▓▒░░▒▓████████▓▒░▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓████████▓▒░                                                        
 ]]
-
 local REQUIRED_URL = "https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game"
 
-local function verifySource()
-    -- Get the current script source
-    local sourceInfo = debug.getinfo(1, "S")
-    if not sourceInfo or not sourceInfo.source then
-        warn("Debug info not available in this executor")
-        return false
-    end
-    
-    -- Normalize the URLs for comparison
-    local current_source = sourceInfo.source
-    local normalized_current = current_source:gsub("^@", ""):gsub("\\", "/")
-    local normalized_required = REQUIRED_URL:gsub("refs/heads/", ""):gsub("\\", "/")
-    
-    -- Debug output to help diagnose
-    warn("Current source:", current_source)
-    warn("Normalized current:", normalized_current)
-    warn("Required source:", normalized_required)
-    
-    -- Check if the normalized URL matches
-    if not normalized_current:find(normalized_required, 1, true) then
-        warn("Source verification failed")
-        return false
-    end
-    return true
+-- Function to normalize URLs for comparison
+local function normalize(url)
+    return url:gsub("^@", ""):gsub("\\", "/"):lower()
 end
 
+-- Verify the script source
+local function verifySource()
+    -- Get current script source
+    local source_info = debug.getinfo(1, "S")
+    if not source_info or not source_info.source then return false end
+    
+    local current_source = normalize(source_info.source)
+    local required_source = normalize(REQUIRED_URL)
+    
+    -- Check for direct match or loadstring match
+    if current_source:find(required_source, 1, true) then
+        return true
+    end
+    
+    -- Additional check for loadstring execution
+    if current_source:find("loadstring", 1, true) then
+        -- Try to get the calling script's source
+        local caller_info = debug.getinfo(2, "S")
+        if caller_info and caller_info.source then
+            return normalize(caller_info.source):find(required_source, 1, true)
+        end
+    end
+    
+    return false
+end
+
+-- Main verification check
 if not verifySource() then
-    warn("==============================================")
+    warn("\n==============================================")
     warn("This script must be executed directly from:")
     warn(REQUIRED_URL)
-    warn("==============================================")
+    warn("or loaded via loadstring from that URL")
+    warn("==============================================\n")
     return
 end
 
--- Your script continues here
-print("Source verification successful! Loading script...")
+-- Your script content here
+print("Source verification passed! Script loading...")
