@@ -9,7 +9,6 @@
  ░▒▓██████▓▒░░▒▓████████▓▒░▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓████████▓▒░                                                        
 ]]
 local function isFromGitHub()
-    -- Get the current script's source (works in most executors)
     local source = debug.getinfo(1, "S").source
     
     if source:find("https://raw.githubusercontent.com/JustSayy/Test/main/game") then
