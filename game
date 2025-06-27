@@ -8,36 +8,36 @@
 ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░        
  ░▒▓██████▓▒░░▒▓████████▓▒░▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓████████▓▒░                                                        
 ]]
-local function verifySource()
-    -- Try to fetch the script from GitHub and check headers
-    local success, response = pcall(function()
-        return game:HttpGet("https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game", true)
-    end)
+local function isFromGitHub()
+    -- Get the current script's source (works in most executors)
+    local source = debug.getinfo(1, "S").source
     
-    -- If successful and contains GitHub headers, allow execution
-    if success and response and type(response) == "table" then
-        -- Check for GitHub's headers (raw.githubusercontent sends specific headers)
-        if response.headers and response.headers["x-github-request-id"] then
-            return true
-        end
+    -- Check if it's running from your GitHub URL
+    if source:find("https://raw.githubusercontent.com/JustSayy/Test/main/game") then
+        return true
     end
     
-    -- If running in a Roblox LocalScript, check for GitHub URL
-    if script and script:GetFullName():find("https://raw.githubusercontent.com/JustSayy/Test/") then
-        return true
+    -- If source is "@" or "[string]", it's running directly (not from GitHub)
+    if source == "@" or source == "[string]" then
+        return false
+    end
+    
+    -- Extra check for Synapse/Krnl (some executors modify the source)
+    if source:match("%[string \".*%]") then
+        return false
     end
     
     return false
 end
 
-if not verifySource() then
-    warn("❗ Script must be loaded from: https://raw.githubusercontent.com/JustSayy/Test/main/game")
-    warn("❗ Direct copying or executing from other sources is blocked.")
-    return
+if not isFromGitHub() then
+    warn("🚫 This script must be loaded from:")
+    warn("loadstring(game:HttpGet('https://raw.githubusercontent.com/JustSayy/Test/main/game'))()")
+    return -- Stops execution if not from GitHub
 end
 
--- ✅ Authorized execution (from GitHub)
-print("✅ Verified source! Running script...")
+-- ✅ If we reach here, it's running from your GitHub link
+print("✅ Authorized execution! Running script...")
 
--- Your exploit script goes below this line
-loadstring(game:HttpGet("https://raw.githubusercontent.com/JustSayy/Test/main/game"))()
+-- Your actual script goes below
+print("Exploit features loaded!")
