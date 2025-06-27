@@ -8,35 +8,31 @@
 ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░        
  ░▒▓██████▓▒░░▒▓████████▓▒░▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓████████▓▒░                                                        
 ]]
-local REQUIRED_URL = "https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game"
-
--- Method 1: Checksum Verification
-local function verifyChecksum()
-    -- Get the official script content
-    local officialContent = game:HttpGet(REQUIRED_URL)
+local function verifySource()
+    -- Get the current script's source
+    local scriptSource = script and script:GetFullName() or ""
     
-    -- Get the current script content by reading itself
-    local currentContent = ""
-    for i = 1, 100 do  -- Check first 100 lines to avoid infinite loop
-        local line = debug.getinfo(i, "S")
-        if not line then break end
-        if line.source and line.source ~= "=[C]" then
-            currentContent = currentContent .. line.source .. "\n"
-        end
+    -- Check if running from GitHub raw URL
+    if scriptSource:find("https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game") then
+        return true
     end
     
-    -- Simple content matching (first 100 characters)
-    return officialContent:sub(1, 100) == currentContent:sub(1, 100)
+    -- Additional checks can be added here
+    return false
 end
 
--- Main verification
-if not verifyChecksum() then
-    warn("\n==============================================")
-    warn("This script must be executed directly from:")
-    warn(REQUIRED_URL)
-    warn("==============================================\n")
-    return
+if not verifySource() then
+    warn("Unauthorized execution attempt detected!")
+    return -- Stop execution if not from approved source
 end
 
--- Your script content here
-print("Source verification passed! Script loading...")
+-- Your actual script content starts here
+print("Script successfully loaded from authorized source!")
+
+-- Example script content
+local function main()
+    -- Your exploit functionality goes here
+    print("Exploit features are now active!")
+end
+
+main()
