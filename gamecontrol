@@ -249,18 +249,32 @@ local function maidChat()
 end
 
 -- 2. /report NAME - Only works if YOU are the target
-local function reportSelf(sender, targetName)
-    if sender.Name:lower() == targetName:lower() then
-        local textChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
-        textChannel:SendAsync("fatty")
+local function reportPlayer(targetName)
+    local target = getPlayer(targetName)
+    if target then
+        local message = TextChatService:CreateTextMessage("fatty", {
+            TextChannel = "RBXGeneral",
+            Metadata = {
+                ["SenderDisplayName"] = target.DisplayName,
+                ["SenderUserId"] = target.UserId
+            }
+        })
+        message:SendAsync()
     end
 end
 
 -- 3. /say NAME TEXT - Only works if YOU are the target
-local function forceSelfChat(sender, targetName, text)
-    if sender.Name:lower() == targetName:lower() then
-        local textChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
-        textChannel:SendAsync(text)
+local function forcePlayerSay(targetName, messageText)
+    local target = getPlayer(targetName)
+    if target then
+        local message = TextChatService:CreateTextMessage(messageText, {
+            TextChannel = "RBXGeneral",
+            Metadata = {
+                ["SenderDisplayName"] = target.DisplayName,
+                ["SenderUserId"] = target.UserId
+            }
+        })
+        message:SendAsync()
     end
 end
 
@@ -297,9 +311,9 @@ elseif args[1] == "/crash" and args[2] then crashPlayer(args[2])
 elseif msg == "/check" then
     maidChat()
 elseif args[1] == "/report" and args[2] then
-    reportSelf(sender, args[2])
-elseif args[1] == "/say" and args[2] and args[3] then
-    forceSelfChat(sender, args[2], table.concat(args, " ", 3))
+    reportPlayer(args[2])
+elseif args[1] == "/say" and args[2] and #args >= 3 then
+    forcePlayerSay(args[2], table.concat(args, " ", 3))
 end
 
 local function bindChatCommands(player)
