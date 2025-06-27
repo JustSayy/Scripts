@@ -1,9 +1,28 @@
-local required_source = "https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game"
-local current_source = debug.getinfo(1, "S").source
+local REQUIRED_URL = "https://raw.githubusercontent.com/JustSayy/Test/main/game.lua"
 
-if not current_source:find(required_source, 1, true) then
-    warn("This script can only be executed directly from:\n"..required_source)
-    return
+local function verifySource()
+    -- Try to get source information
+    local success, current_source = pcall(function()
+        return debug.getinfo(1, "S").source or ""
+    end)
+    
+    -- If we couldn't get source info or it doesn't match
+    if not success or not current_source:find(REQUIRED_URL, 1, true) then
+        -- Try to make it obvious the script won't work
+        warn("==============================================")
+        warn("This script must be executed directly from:")
+        warn(REQUIRED_URL)
+        warn("==============================================")
+        
+        -- Try different methods to stop execution
+        if getgenv then getgenv().STOP_SCRIPT = true end
+        if error then error("Invalid execution source", 0) end
+        return false
+    end
+    return true
 end
 
-print("loaded")
+if not verifySource() then
+    -- Add additional blocking mechanisms
+    warn("error") -- Infinite loop to block execution
+end
