@@ -8,4 +8,19 @@
 ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░        
  ░▒▓██████▓▒░░▒▓████████▓▒░▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓████████▓▒░                                                        
 ]]
+-- Security checks (MUST be at top of script)
+do
+    if not _G.JustSayy_Authorization then
+        error("Unauthorized loader")
+    end
 
+    local valid_token = "5T@9kL#pR2s$0vF!" -- Match loader's token
+    local passed_token = ... -- Get token argument
+
+    if passed_token ~= valid_token then
+        error("Invalid token")
+    end
+end
+
+-- YOUR ORIGINAL SCRIPT STARTS BELOW --
+print("Successfully loaded!")
