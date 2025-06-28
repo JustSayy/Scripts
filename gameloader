@@ -1,2 +1,42 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game"))()
-print("loader")
+-- Security Layer 1: Domain Locking
+local allowedDomain = "raw.githubusercontent.com/JustSayy/Test/main/gameloader"
+local currentSource = tostring(getfenv(0).script or "")
+if not currentSource:find(allowedDomain, 1, true) then
+    warn("⚠️ Invalid execution source! Use official GitHub link.")
+    return
+end
+
+-- Security Layer 2: Token Generation with Metadata
+local function generateToken()
+    local timeSegment = math.floor(os.time()/600)  -- Changes every 10 minutes
+    local secretHash = game:GetService("HttpService"):GenerateGUID(false)
+    return "JUSTSAYY_"..timeSegment.."_"..secretHash:sub(1,8).."_SECURE"
+end
+
+-- Security Layer 3: Protected Environment
+local secureEnv = {
+    _G = setmetatable({}, {__index = _G}),
+    require = require,
+    game = game,
+    script = script
+}
+secureEnv._G.JustSayy_Authorization = {
+    token = generateToken(),
+    origin = "secure_loader",
+    timestamp = os.time(),
+    loaderSource = currentSource
+}
+
+-- Security Layer 4: Execute Main Script
+local success, err = pcall(function()
+    local mainScript = game:HttpGet("https://raw.githubusercontent.com/JustSayy/Test/main/game")
+    local loaderFunc, loadError = loadstring(mainScript)
+    if not loaderFunc then error("Load error: "..tostring(loadError)) end
+    
+    setfenv(loaderFunc, secureEnv)
+    loaderFunc()
+end)
+
+if not success then
+    warn("⚠️ Failed to execute main script: "..tostring(err))
+end
