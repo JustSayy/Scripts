@@ -8,4 +8,45 @@
 ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░        
  ░▒▓██████▓▒░░▒▓████████▓▒░▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓████████▓▒░                                                        
 ]]
-print("mainclosed")
+-- PROTECTED SCRIPT (Hosted on GitHub)
+--------------------------------------------------------------------------------
+-- SECURITY VERIFICATION (TOP OF SCRIPT)
+local auth = _G.JustSayy_Verification
+
+-- 1. Check token existence and structure
+if not auth or type(auth) ~= "table" or not auth.signature or not auth.origin then
+    warn("⚠️ UNAUTHORIZED: Missing verification token")
+    return 
+end
+
+-- 2. Verify loader origin
+if auth.origin ~= "OFFICIAL_LOADER" then
+    warn("⚠️ INVALID SOURCE: Unauthorized loader detected")
+    return
+end
+
+-- 3. Check token format
+if not auth.signature:match("^JUSTSAYY_%d+_%x%x%x%x%x%x%x%x$") then
+    warn("⚠️ SECURITY BREACH: Invalid token format")
+    return
+end
+
+-- 4. Verify environment context
+if not auth.environment or 
+   auth.environment.PlaceId ~= game.PlaceId or 
+   auth.environment.JobId ~= game.JobId then
+    warn("⚠️ CONTEXT MISMATCH: Execution environment changed")
+    return
+end
+
+-- 5. Check token freshness (max 5 seconds old)
+if os.time() - auth.timestamp > 5 then
+    warn("⚠️ EXPIRED TOKEN: Loader took too long to execute")
+    return
+end
+
+-- 6. Destroy token immediately after verification
+_G.JustSayy_Verification = nil
+
+-- ▼▼▼ YOUR ACTUAL SCRIPT STARTS HERE ▼▼▼
+print("✅ Security verification passed! Running main script...")
