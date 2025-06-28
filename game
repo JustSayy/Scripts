@@ -8,30 +8,55 @@
 ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░        
  ░▒▓██████▓▒░░▒▓████████▓▒░▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓████████▓▒░                                                        
 ]]
-local function isFromGitHub()
-    local source = debug.getinfo(1, "S").source
-    
-    if source:find("https://raw.githubusercontent.com/JustSayy/Test/main/game") then
-        return true
-    end
-    
-    if source == "@" or source == "[string]" then
+local function verifyExecution()
+    -- Check #1: Verify the script is being loaded via loadstring
+    local info = debug.getinfo(1, "S")
+    if not info or not info.source or info.source:sub(1, 1) ~= "=" then
         return false
     end
     
-    if source:match("%[string \".*%]") then
+    -- Check #2: Verify the script is being loaded from GitHub
+    local callingScript = debug.getinfo(2, "S")
+    if not callingScript or not callingScript.source or 
+       not callingScript.source:find("githubusercontent.com") then
         return false
     end
     
-    return false
+    -- Check #3: Environment check (optional)
+    if not getgenv or not is_synapse_function then
+        return false
+    end
+    
+    return true
 end
 
-if not isFromGitHub() then
-    warn("gagal jink")
-    warn("loadstring(game:HttpGet('https://raw.githubusercontent.com/JustSayy/Test/main/game'))()")
+if not verifyExecution() then
+    warn("Security check failed. This script cannot be executed directly.")
     return
 end
 
-print("berhasil jink")
+-- Main script content
+loadstring(game:HttpGet("https://raw.githubusercontent.com/JustSayy/Test/refs/heads/main/game"))()
 
-print("ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok ok")
+-- Optional: Add more security checks
+local function additionalChecks()
+    -- Check for specific exploit functions
+    if not hookfunction or not setreadonly then
+        return false
+    end
+    
+    -- Check for metatable manipulation
+    if not debug.getmetatable then
+        return false
+    end
+    
+    return true
+end
+
+if not additionalChecks() then
+    warn("Additional security checks failed. Execution halted.")
+    return
+end
+
+-- Your actual exploit code would go here
+print("Script loaded successfully from secure source!")
