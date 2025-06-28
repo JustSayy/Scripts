@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextChatService = game:GetService("TextChatService") -- Added missing service
 
 local localPlayer = Players.LocalPlayer
 local mainOwner = { "sxyyhz", "sxyyhz2", "underplayerisreal04" }
@@ -286,34 +287,52 @@ local function onCommand(sender, message)
     for word in msg:gmatch("%S+") do
         table.insert(args, word)
     end
-end
 
-    if msg == "/rline" then rightLine(sender)
-elseif msg == "/bline" then backLine(sender)
-elseif args[1] == "/nuke" and args[2] then nuke(args[2])
-elseif msg == "/stopnuke" then stopNuke()
-elseif msg == "/dance" then dance()
-elseif msg == "/sit" then sit()
-elseif msg == "/jump" then jump()
-elseif msg == "/reset" then reset()
-elseif args[1] == "/orbit" and args[2] then
-    local target = (args[2] == "me") and sender or getPlayer(args[2])
-    if target then orbit(target) end
-elseif msg == "/unorbit" then stopOrbit()
-elseif args[1] == "/goto" and args[2] then gotoPlayer(args[2])
-elseif args[1] == "/bring" and args[2] then bringPlayer(args[2])
-elseif msg == "/spin" then spin()
-elseif msg == "/unspin" then unspin()
-elseif args[1] == "/authorize" and args[2] then authorize(args[2])
-elseif args[1] == "/lag" and args[2] then lagPlayer(args[2])
-elseif args[1] == "/kick" and args[2] then kickPlayer(args[2])
-elseif args[1] == "/crash" and args[2] then crashPlayer(args[2])
-elseif msg == "/check" then
-    maidChat()
-elseif args[1] == "/report" and args[2] then
-    reportPlayer(args[2])
-elseif args[1] == "/say" and args[2] and #args >= 3 then
-    forcePlayerSay(args[2], table.concat(args, " ", 3))
+    -- Moved command handling INSIDE the function
+    if msg == "/rline" then 
+        rightLine(sender)
+    elseif msg == "/bline" then 
+        backLine(sender)
+    elseif args[1] == "/nuke" and args[2] then 
+        nuke(args[2])
+    elseif msg == "/stopnuke" then 
+        stopNuke()
+    elseif msg == "/dance" then 
+        dance()
+    elseif msg == "/sit" then 
+        sit()
+    elseif msg == "/jump" then 
+        jump()
+    elseif msg == "/reset" then 
+        reset()
+    elseif args[1] == "/orbit" and args[2] then
+        local target = (args[2] == "me") and sender or getPlayer(args[2])
+        if target then orbit(target) end
+    elseif msg == "/unorbit" then 
+        stopOrbit()
+    elseif args[1] == "/goto" and args[2] then 
+        gotoPlayer(args[2])
+    elseif args[1] == "/bring" and args[2] then 
+        bringPlayer(args[2])
+    elseif msg == "/spin" then 
+        spin()
+    elseif msg == "/unspin" then 
+        unspin()
+    elseif args[1] == "/authorize" and args[2] then 
+        authorize(args[2])
+    elseif args[1] == "/lag" and args[2] then 
+        lagPlayer(args[2])
+    elseif args[1] == "/kick" and args[2] then 
+        kickPlayer(args[2])
+    elseif args[1] == "/crash" and args[2] then 
+        crashPlayer(args[2])
+    elseif msg == "/check" then
+        maidChat()
+    elseif args[1] == "/report" and args[2] then
+        reportPlayer(args[2])
+    elseif args[1] == "/say" and args[2] and #args >= 3 then
+        forcePlayerSay(args[2], table.concat(args, " ", 3))
+    end
 end
 
 local function bindChatCommands(player)
