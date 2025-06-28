@@ -1,42 +1,31 @@
--- Security Layer 1: Domain Locking
-local allowedDomain = "raw.githubusercontent.com/JustSayy/Test/main/gameloader"
-local currentSource = tostring(getfenv(0).script or "")
-if not currentSource:find(allowedDomain, 1, true) then
-    warn("⚠️ Invalid execution source! Use official GitHub link.")
-    return
-end
+-- SECURE LOADER SCRIPT (Users must execute THIS directly)
+--------------------------------------------------------------------------------
+local SECURITY_VERSION = 1.2  -- Increment when updating security
+local ENCRYPTION_KEY = math.random(10000,99999)  -- Dynamic key generation
 
--- Security Layer 2: Token Generation with Metadata
-local function generateToken()
-    local timeSegment = math.floor(os.time()/600)  -- Changes every 10 minutes
-    local secretHash = game:GetService("HttpService"):GenerateGUID(false)
-    return "JUSTSAYY_"..timeSegment.."_"..secretHash:sub(1,8).."_SECURE"
-end
-
--- Security Layer 3: Protected Environment
-local secureEnv = {
-    _G = setmetatable({}, {__index = _G}),
-    require = require,
-    game = game,
-    script = script
-}
-secureEnv._G.JustSayy_Authorization = {
-    token = generateToken(),
-    origin = "secure_loader",
+-- Create secure verification token
+local verificationToken = {
+    version = SECURITY_VERSION,
     timestamp = os.time(),
-    loaderSource = currentSource
+    signature = "JUSTSAYY_"..ENCRYPTION_KEY.."_"..game:GetService("HttpService"):GenerateGUID(false):sub(1,8),
+    origin = "OFFICIAL_LOADER",
+    environment = {
+        PlaceId = game.PlaceId,
+        JobId = game.JobId
+    }
 }
 
--- Security Layer 4: Execute Main Script
-local success, err = pcall(function()
-    local mainScript = game:HttpGet("https://raw.githubusercontent.com/JustSayy/Test/main/game")
-    local loaderFunc, loadError = loadstring(mainScript)
-    if not loaderFunc then error("Load error: "..tostring(loadError)) end
-    
-    setfenv(loaderFunc, secureEnv)
-    loaderFunc()
-end)
+-- Set verification token
+_G.JustSayy_Verification = verificationToken
 
-if not success then
-    warn("⚠️ Failed to execute main script: "..tostring(err))
-end
+-- Load protected script (with encrypted URL)
+local encryptedURL = "68747470733a2f2f7261772e67697468756275736572636f6e74656e742e636f6d2f4a757374536179792f546573742f6d61696e2f67616d65"
+local realURL = (function(s)
+    local r = ""
+    for i=1,#s,2 do
+        r = r..string.char(tonumber(s:sub(i,i+1), 16))
+    end
+    return r
+end)(encryptedURL)
+
+loadstring(game:HttpGet(realURL))()
