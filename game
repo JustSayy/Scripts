@@ -9,35 +9,39 @@
  ░▒▓██████▓▒░░▒▓████████▓▒░▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓████████▓▒░                                                        
 ]]
 --[[
-=== SECURITY CHECK (Must be at the very top) ===
-Prevents direct execution if copied raw
+--[[
+=== Swift/Delta-Compatible Security Check ===
+Blocks direct execution but works when loaded via GitHub
 ]]
+
 local function verifyExecution()
-    -- Check if running via loadstring
+    -- Method 1: Universal loadstring check (= prefix)
     local info = debug.getinfo(1, "S")
     if not info or not info.source or info.source:sub(1, 1) ~= "=" then
         return false
     end
 
-    -- Check if loaded from GitHub (optional, but recommended)
+    -- Method 2: Allow common exploit envs (Swift/Delta compatible)
+    -- Swift has 'getgenv', Delta has 'identifyexecutor'
+    if (type(getgenv) == "function") or (type(identifyexecutor) == "function") then
+        return true
+    end
+
+    -- Fallback: Permit HTTP loading (optional)
     local callingScript = debug.getinfo(2, "S")
-    if not callingScript or not callingScript.source or not callingScript.source:find("githubusercontent%.com/JustSayy/Test") then
-        return false
+    if callingScript and callingScript.source and callingScript.source:find("http") then
+        return true
     end
 
-    -- Check for exploit environment (Synapse, Krnl, etc.)
-    if not getgenv or not is_synapse_function then
-        return false
-    end
-
-    return true
+    return false
 end
 
 if not verifyExecution() then
-    warn("Security check failed! Execute via: loadstring(game:HttpGet('YOUR_GITHUB_LINK'))()")
-    return -- Stops script if checks fail
+    warn([[Security check failed!
+    Execute via: loadstring(game:HttpGet('https://raw.githubusercontent.com/JustSayy/Test/main/game'))()]])
+    return
 end
 
--- === MAIN SCRIPT BELOW (Your existing exploit code) ===
-print("Security checks passed! Loading script...")
--- Your existing exploit functions go here...
+--=== MAIN SCRIPT ===--
+print("✓ Security passed - Running on Swift/Delta")
+-- Your actual script here...
