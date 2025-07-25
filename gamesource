@@ -8,6 +8,7 @@ local v6 = table.concat;
 local v7 = table.insert;
 local v8 = math.ldexp;
 local v9 = getfenv or function()
+local v10 = v2
 	return _ENV;
 end;
 local v10 = setmetatable;
