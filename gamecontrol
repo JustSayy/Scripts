@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService") -- Added missing service
 
 local localPlayer = Players.LocalPlayer
-local mainOwner = { "sxyyhz", "sxyyhz2", "underplayerisreal04" }
+local mainOwner = { "sxyyhz", "sxyyhz2", "sxyyhz1" }
 local authorizedUsers = {}
 
 for _, username in ipairs(mainOwner) do
