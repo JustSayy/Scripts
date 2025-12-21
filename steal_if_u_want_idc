@@ -1,0 +1,286 @@
+_G.Credit = "NatanTeli / glitchtale"
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Evade Any Event AutoFarm",
+   LoadingTitle = "Made by NatanTeli / glitchtale",
+   LoadingSubtitle = "Ultra Fast Spam Teleport",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "AutoFarm",
+      FileName = "Config"
+   },
+   Discord = {
+      Enabled = false,
+      Invite = "noinvitelink",
+      RememberJoins = true
+   },
+   KeySystem = false,
+})
+
+local MainTab = Window:CreateTab("Main", 4483362458)
+local Section = MainTab:CreateSection("Farm)
+
+local AutoFarmEnabled = false
+local AutoFarmLoop = nil
+local LastVisualPosition = nil
+
+local function findVisualTicket()
+    local success, result = pcall(function()
+        local visualTicket = Workspace.Game.Effects.Tickets.Visual
+        if visualTicket and visualTicket:IsA("Model") then
+            return visualTicket
+        end
+        return nil
+    end)
+    
+    if success and result then
+        return result
+    end
+    
+    return nil
+end
+
+local function getVisualPosition(visualModel)
+    if not visualModel or not visualModel:IsA("Model") then return nil end
+    
+    local primaryPart = visualModel.PrimaryPart or visualModel:FindFirstChildWhichIsA("BasePart")
+    
+    if not primaryPart then
+        for _, descendant in pairs(visualModel:GetDescendants()) do
+            if descendant:IsA("BasePart") then
+                primaryPart = descendant
+                break
+            end
+        end
+    end
+    
+    if primaryPart then
+        return primaryPart.Position
+    end
+    
+    return nil
+end
+
+local function spamTeleportRoutine()
+    while AutoFarmEnabled do
+        if not character or not humanoidRootPart then
+            task.wait(0.01)
+            continue
+        end
+        
+        local visualTicket = findVisualTicket()
+        
+        if visualTicket then
+            local visualPos = getVisualPosition(visualTicket)
+            if visualPos then
+                LastVisualPosition = visualPos
+                local teleportPos = visualPos + Vector3.new(0, -6, 0)
+                
+                pcall(function()
+                    humanoidRootPart.CFrame = CFrame.new(teleportPos)
+                end)
+            end
+            
+        else
+            if LastVisualPosition then
+                -- Spam teleport to last known Visual position
+                pcall(function()
+                    local spamPos = LastVisualPosition + Vector3.new(0, -6, 0)
+                    humanoidRootPart.CFrame = CFrame.new(spamPos)
+                end)
+            else
+                pcall(function()
+                    local currentPos = humanoidRootPart.Position
+                    humanoidRootPart.CFrame = CFrame.new(currentPos)
+                end)
+            end
+        end
+        
+        task.wait(0.01)
+    end
+end
+
+local function startSpamFarm()
+    Rayfield:Notify({
+        Title = "AutoFarm Mulai",
+        Content = "AutoFarm",
+        Duration = 2,
+        Image = 4483362458,
+    })
+    
+    AutoFarmLoop = task.spawn(spamTeleportRoutine)
+end
+
+local function stopSpamFarm()
+    if AutoFarmLoop then
+        task.cancel(AutoFarmLoop)
+        AutoFarmLoop = nil
+    end
+    LastVisualPosition = nil
+    
+    Rayfield:Notify({
+        Title = "AutoFarm Selesai",
+        Content = "AutoFarm",
+        Duration = 2,
+        Image = 4483362458,
+    })
+end
+
+local Toggle = MainTab:CreateToggle({
+    Name = "Any Event AutoFarm",
+    CurrentValue = false,
+    Flag = "SpamTeleportToggle",
+    Callback = function(Value)
+        AutoFarmEnabled = Value
+        if Value then
+            startSpamFarm()
+        else
+            stopSpamFarm()
+        end
+    end,
+})
+
+local Button = MainTab:CreateButton({
+    Name = "Force Check",
+    Callback = function()
+        local visualTicket = findVisualTicket()
+        if visualTicket then
+            local visualPos = getVisualPosition(visualTicket)
+            Rayfield:Notify({
+                Title = "Tickets Found",
+                Content = "Position: " .. tostring(visualPos),
+                Duration = 3,
+                Image = 4483362458,
+            })
+        else
+            Rayfield:Notify({
+                Title = "No Tickets",
+                Content = "Gak ada tickets",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        end
+    end,
+})
+
+local Button2 = MainTab:CreateButton({
+    Name = "Reset Last Position",
+    Callback = function()
+        LastVisualPosition = nil
+        Rayfield:Notify({
+            Title = "Position Reset",
+            Content = "Posisi Tickets terakhir direset",
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end,
+})
+
+local StatusTab = Window:CreateTab("Status", 4483362458)
+local StatusSection = StatusTab:CreateSection("Farm Status")
+
+local VisualStatusLabel = StatusTab:CreateLabel("Tickets Status: Checking...")
+local PositionLabel = StatusTab:CreateLabel("Last Position: None")
+local TeleportCount = 0
+local TeleportLabel = StatusTab:CreateLabel("Teleports: 0")
+
+task.spawn(function()
+    while true do
+        if AutoFarmEnabled then
+            local visualTicket = findVisualTicket()
+            if visualTicket then
+                VisualStatusLabel:Set("Tickets Status: FOUND")
+                local visualPos = getVisualPosition(visualTicket)
+                if visualPos then
+                    PositionLabel:Set("Last Position: " .. tostring(visualPos))
+                end
+            else
+                VisualStatusLabel:Set("Tickets  Status: NOT FOUND")
+                if LastVisualPosition then
+                    PositionLabel:Set("Last Position: " .. tostring(LastVisualPosition))
+                else
+                    PositionLabel:Set("Last Position: None")
+                end
+            end
+            TeleportLabel:Set("Teleports: " .. tostring(TeleportCount))
+        else
+            VisualStatusLabel:Set("Tickets Status: OFF")
+            PositionLabel:Set("Last Position: None")
+        end
+        task.wait(0.1)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        if AutoFarmEnabled then
+            TeleportCount = TeleportCount + 1
+        else
+            TeleportCount = 0
+        end
+        task.wait(0.01)
+    end
+end)
+
+local SettingsTab = Window:CreateTab("Settings", 4483362458)
+local SettingsSection = SettingsTab:CreateSection("Configuration")
+
+local Slider = SettingsTab:CreateSlider({
+    Name = "Farm TP Speed (g ngaruh sih keknya)",
+    Range = {0.001, 0.1},
+    Increment = 0.001,
+    Suffix = "seconds",
+    CurrentValue = 0.01,
+    Flag = "SpamSpeed",
+    Callback = function(Value)
+    end,
+})
+
+local Toggle2 = SettingsTab:CreateToggle({
+    Name = "Show Teleport Count",
+    CurrentValue = true,
+    Flag = "ShowTeleportCount",
+    Callback = function(Value)
+        if Value then
+            TeleportLabel:Set("Teleports: " .. tostring(TeleportCount))
+        else
+            TeleportLabel:Set("Teleports: Hidden")
+        end
+    end,
+})
+
+player.CharacterAdded:Connect(function(newCharacter)
+    character = newCharacter
+    humanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
+    
+    if AutoFarmEnabled then
+        task.wait(1)
+        startSpamFarm()
+    end
+end)
+
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if input.KeyCode == Enum.KeyCode.End then
+        stopSpamFarm()
+        Rayfield:Destroy()
+    end
+end)
+
+Rayfield:Notify({
+    Title = "AutoFarm Loaded",
+    Content = "Toggle on to start ultra fast spam teleport!",
+    Duration = 4,
+    Image = 4483362458,
+})
+
+Rayfield:LoadConfiguration()
